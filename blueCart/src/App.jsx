@@ -1,33 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ProductList from './component/ProductList/ProductList';
-import Navbar from './component/NavBar/NavBar'
-
+import Navbar from './component/NavBar/NavBar';
 
 function App() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  useEffect(() => {
-    fetch('https://dummyjson.com/products')
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data.products);
-        setLoading(false);
-      })
-      .catch((err) => console.error("Error fetching data:", err));
-  }, []);
   return (
     <>
-     <Navbar />
+      <Navbar
+        selectedCategory={selectedCategory}
+        onCategorySelect={setSelectedCategory}
+      />
       <main>
-        {loading ? (
-          <div className="loader">Loading BlueCart products...</div>
-        ) : (
-          <ProductList products={products} />
-        )}
+        <ProductList selectedCategory={selectedCategory} />
       </main>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

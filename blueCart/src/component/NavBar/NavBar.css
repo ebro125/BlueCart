@@ -1,24 +1,215 @@
+/* Navbar container */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #2c82ef;
-    color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0078d7; /* nice blue tone */
+  padding: 15px 15px;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
+/* Logo */
 .nav-logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+  font-size: 1.4rem;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
-.nav-links span,
-.nav-cart span {
-    margin: 0 10px;
-    cursor: pointer;
+/* Links container */
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+/* Individual link spans */
+.nav-links span {
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-links span:hover {
+  color: #ffdd57;
+}
+
+/* Cart button */
+.cart-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffdd57;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.cart-button:hover {
+  background-color: #ffc107;
+  transform: scale(1.05);
+}
+
+.cart-button:active {
+  background-color: #7e8000;
+  transform: scale(0.95);
+}
+
+.cart-button svg {
+  font-size: 18px;
+}
+
+/* Search bar container */
+.nav-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .nav-search input {
-    padding: 5px;
-    width: 250px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.nav-search button {
+  padding: 6px 12px;
+  background: #ffdd57;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.nav-search button:hover {
+  background: #ffc107;
+}
+
+/* Cart icon */
+.nav-cart {
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.nav-cart:hover {
+  color: #ffdd57;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-search {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-search input {
+    flex: 1;
+  }
+}
+/* Category dropdown wrapper */
+.category-dropdown {
+  position: relative;
+}
+
+/* The clickable "Categories" label */
+.category-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  text-transform: capitalize;
+}
+
+.category-toggle:hover {
+  color: #ffdd57;
+}
+
+/* Chevron icon rotation */
+.chevron {
+  font-size: 11px;
+  transition: transform 0.25s ease;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown menu box */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  min-width: 200px;
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 999;
+  animation: dropdownFade 0.2s ease;
+}
+
+/* Each item in the dropdown */
+.dropdown-item {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-transform: capitalize;
+}
+
+.dropdown-item:hover {
+  background: #f0f4ff;
+  color: #0078d7;
+}
+
+/* Highlighted selected category */
+.dropdown-item.active {
+  background: #e6f0ff;
+  color: #0078d7;
+  font-weight: 600;
+}
+
+/* "All Products" item gets a subtle separator */
+.dropdown-item.all-products {
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  color: #0078d7;
+}
+
+/* Scrollbar styling for dropdown */
+.dropdown-menu::-webkit-scrollbar {
+  width: 5px;
+}
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
