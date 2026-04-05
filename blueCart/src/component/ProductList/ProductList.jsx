@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { addToCart } from '../../store/slices/cartSlice';
 import ProductCard from '../ProductCard/ProductCard';
 import { FaShoppingCart } from "react-icons/fa";
 import './ProductList.css';
 
-const ProductList = ({ selectedCategory, searchQuery, addToCart }) => {
+const ProductList = () => {
+  const dispatch = useDispatch();
+  const selectedCategory = useSelector(state => state.category.selected);
+  const searchQuery = useSelector(state => state.search.query);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     let url = 'https://dummyjson.com/products';
-
     if (searchQuery) {
       url = `https://dummyjson.com/products/search?q=${searchQuery}`;
     } else if (selectedCategory) {
       url = `https://dummyjson.com/products/category/${selectedCategory}`;
     }
-
     fetch(url)
       .then(res => res.json())
       .then(data => setProducts(data.products));
@@ -42,7 +45,7 @@ const ProductList = ({ selectedCategory, searchQuery, addToCart }) => {
             <p>Brand: {selectedProduct.brand}</p>
             <p>Category: {selectedProduct.category}</p>
             <button className="cart-btn" onClick={() => {
-              addToCart(selectedProduct);
+              dispatch(addToCart(selectedProduct));
               setSelectedProduct(null);
             }}>
               <FaShoppingCart /> Add to Cart

@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setCategory } from '../../store/slices/categorySlice';
+import { setSearchQuery } from '../../store/slices/searchSlice';
 import './NavBar.css';
 import { FaShoppingCart, FaChevronDown } from "react-icons/fa";
 
-const Navbar = ({ selectedCategory, onCategorySelect, searchQuery, onSearchChange,onHome, cartCount, onCartClick }) => {
+const Navbar = ({ onHome, onCartClick }) => {
+  const dispatch = useDispatch();
+  const selectedCategory = useSelector(state => state.category.selected);
+  const cartItems = useSelector(state => state.cart.items);
+  const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
+
   const [categories, setCategories] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(searchQuery);
+  const [inputValue, setInputValue] = useState('');
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -24,20 +32,19 @@ const Navbar = ({ selectedCategory, onCategorySelect, searchQuery, onSearchChang
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleCategoryClick = (category) => {
-    onCategorySelect(category.slug);
+  const handleAllProducts = () => {
+    onHome();
+    setInputValue('');
     setDropdownOpen(false);
   };
 
-  const handleAllProducts = () => {
-    onHome();
-    onCategorySelect(null);
+  const handleCategoryClick = (category) => {
+    dispatch(setCategory(category.slug));
     setDropdownOpen(false);
-    setInputValue('');
   };
 
   const handleSearch = () => {
-    onSearchChange(inputValue);
+    dispatch(setSearchQuery(inputValue));
   };
 
   const handleKeyDown = (e) => {

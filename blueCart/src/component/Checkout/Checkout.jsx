@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { FaArrowLeft, FaCreditCard, FaLock } from 'react-icons/fa';
 import './Checkout.css';
+import { useSelector } from 'react-redux';
 
-const Checkout = ({ cartItems, onBack, onOrderSuccess }) => {
+const Checkout = ({onBack, onOrderSuccess }) => {
+     const cartItems = useSelector(state => state.cart.items);
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',

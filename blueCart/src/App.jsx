@@ -1,4 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setCategory } from './store/slices/categorySlice';
+import { setSearchQuery } from './store/slices/searchSlice';
+import { clearCart } from './store/slices/cartSlice';
+import { useState } from 'react';
 import ProductList from './component/ProductList/ProductList';
 import Navbar from './component/NavBar/NavBar';
 import Cart from './component/Cart/Cart';
@@ -6,62 +11,25 @@ import Checkout from './component/Checkout/Checkout';
 import './App.css';
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [cartItems, setCartItems] = useState(() => {
-    // Load cart from localStorage on first render
-    const saved = localStorage.getItem('blueCart');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [page, setPage] = useState('home'); // 'home' | 'cart' | 'checkout' | 'success'
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
+  const selectedCategory = useSelector(state => state.category.selected);
+  const searchQuery = useSelector(state => state.search.query);
+  const [page, setPage] = useState('home');
 
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('blueCart', JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  const addToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-  };
-
-  const removeFromCart = (productId) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
-  };
-
-  const updateQuantity = (productId, quantity) => {
-    if (quantity < 1) return removeFromCart(productId);
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === productId ? { ...item, quantity } : item
-      )
-    );
+  const handleHome = () => {
+    dispatch(setCategory(null));
+    dispatch(setSearchQuery(''));
   };
 
   const handleOrderSuccess = () => {
-    setCartItems([]); // clear cart
+    dispatch(clearCart());
     setPage('success');
   };
-  const handleHome = () => {
-  setSelectedCategory(null);
-  setSearchQuery('');
-};
 
   if (page === 'cart') {
     return (
       <Cart
-        cartItems={cartItems}
-        removeFromCart={removeFromCart}
-        updateQuantity={updateQuantity}
         onBack={() => setPage('home')}
         onCheckout={() => setPage('checkout')}
       />
@@ -71,7 +39,6 @@ function App() {
   if (page === 'checkout') {
     return (
       <Checkout
-        cartItems={cartItems}
         onBack={() => setPage('cart')}
         onOrderSuccess={handleOrderSuccess}
       />
@@ -94,20 +61,13 @@ function App() {
   return (
     <>
       <Navbar
-        selectedCategory={selectedCategory}
-        onCategorySelect={setSelectedCategory}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        cartCount={cartItems.reduce((sum, i) => sum + i.quantity, 0)}
-        onCartClick={() => setPage('cart')}
         onHome={handleHome}
+        onCategorySelect={(cat) => dispatch(setCategory(cat))}
+        onSearchChange={(q) => dispatch(setSearchQuery(q))}
+        onCartClick={() => setPage('cart')}
       />
       <main>
-        <ProductList
-          selectedCategory={selectedCategory}
-          searchQuery={searchQuery}
-          addToCart={addToCart}
-        />
+        <ProductList />
       </main>
     </>
   );

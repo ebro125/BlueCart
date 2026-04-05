@@ -1,8 +1,12 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { removeFromCart, updateQuantity } from '../../store/slices/cartSlice';
 import { FaArrowLeft, FaTrash } from 'react-icons/fa';
 import './Cart.css';
 
-const Cart = ({ cartItems, removeFromCart, updateQuantity, onBack, onCheckout }) => {
+const Cart = ({ onBack, onCheckout }) => {
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -30,12 +34,12 @@ const Cart = ({ cartItems, removeFromCart, updateQuantity, onBack, onCheckout })
                   <p>${item.price}</p>
                 </div>
                 <div className="cart-item-actions">
-                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>−</button>
+                  <button onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))}>−</button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                  <button onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}>+</button>
                 </div>
                 <p className="cart-item-subtotal">${(item.price * item.quantity).toFixed(2)}</p>
-                <button className="remove-btn" onClick={() => removeFromCart(item.id)}>
+                <button className="remove-btn" onClick={() => dispatch(removeFromCart(item.id))}>
                   <FaTrash />
                 </button>
               </div>
