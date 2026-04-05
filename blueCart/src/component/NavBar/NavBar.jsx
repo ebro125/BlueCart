@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import './NavBar.css';
 import { FaShoppingCart, FaChevronDown } from "react-icons/fa";
 
-const Navbar = ({ selectedCategory, onCategorySelect }) => {
+const Navbar = ({ selectedCategory, onCategorySelect, searchQuery, onSearchChange,onHome, cartCount, onCartClick }) => {
   const [categories, setCategories] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(searchQuery);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -13,7 +14,6 @@ const Navbar = ({ selectedCategory, onCategorySelect }) => {
       .then(data => setCategories(data));
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -30,8 +30,18 @@ const Navbar = ({ selectedCategory, onCategorySelect }) => {
   };
 
   const handleAllProducts = () => {
+    onHome();
     onCategorySelect(null);
     setDropdownOpen(false);
+    setInputValue('');
+  };
+
+  const handleSearch = () => {
+    onSearchChange(inputValue);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch();
   };
 
   return (
@@ -42,8 +52,8 @@ const Navbar = ({ selectedCategory, onCategorySelect }) => {
         <span onClick={handleAllProducts}>Home</span>
 
         <div className="category-dropdown" ref={dropdownRef}>
-          <span 
-            className="category-toggle" 
+          <span
+            className="category-toggle"
             onClick={() => setDropdownOpen(prev => !prev)}
           >
             {selectedCategory ? selectedCategory : 'Categories'}
@@ -70,12 +80,21 @@ const Navbar = ({ selectedCategory, onCategorySelect }) => {
       </div>
 
       <div className="nav-search">
-        <input type="text" placeholder="Search products..." />
-        <button>Search</button>
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button onClick={handleSearch}>Search</button>
       </div>
 
       <div className="nav-cart">
-        <button className="cart-button"><FaShoppingCart /> Cart</button>
+        <button className="cart-button" onClick={onCartClick}>
+          <FaShoppingCart /> Cart
+          {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+        </button>
       </div>
     </nav>
   );

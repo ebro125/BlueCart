@@ -3,19 +3,23 @@ import ProductCard from '../ProductCard/ProductCard';
 import { FaShoppingCart } from "react-icons/fa";
 import './ProductList.css';
 
-const ProductList = ({ selectedCategory }) => {
+const ProductList = ({ selectedCategory, searchQuery, addToCart }) => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-    const url = selectedCategory
-      ? `https://dummyjson.com/products/category/${selectedCategory}`
-      : 'https://dummyjson.com/products';
+    let url = 'https://dummyjson.com/products';
+
+    if (searchQuery) {
+      url = `https://dummyjson.com/products/search?q=${searchQuery}`;
+    } else if (selectedCategory) {
+      url = `https://dummyjson.com/products/category/${selectedCategory}`;
+    }
 
     fetch(url)
       .then(res => res.json())
       .then(data => setProducts(data.products));
-  }, [selectedCategory]);  // re-fetches whenever category changes
+  }, [selectedCategory, searchQuery]);
 
   return (
     <div className="product-grid">
@@ -37,7 +41,10 @@ const ProductList = ({ selectedCategory }) => {
             <p>Price: ${selectedProduct.price}</p>
             <p>Brand: {selectedProduct.brand}</p>
             <p>Category: {selectedProduct.category}</p>
-            <button className="cart-btn">
+            <button className="cart-btn" onClick={() => {
+              addToCart(selectedProduct);
+              setSelectedProduct(null);
+            }}>
               <FaShoppingCart /> Add to Cart
             </button>
           </div>
