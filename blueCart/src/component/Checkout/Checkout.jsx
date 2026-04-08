@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { FaArrowLeft, FaCreditCard, FaLock } from 'react-icons/fa';
 import './Checkout.css';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearCart } from '../../store/slices/cartSlice';
+import { placeOrder } from '../../services/api';
 
-const Checkout = ({onBack, onOrderSuccess }) => {
-     const cartItems = useSelector(state => state.cart.items);
+const Checkout = ({ onBack, onOrderSuccess }) => {
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
     address: '', city: '', zip: '',
@@ -31,16 +35,13 @@ const Checkout = ({onBack, onOrderSuccess }) => {
   const handleChange = (e) => {
     let { name, value } = e.target;
 
-    // Auto-format card number with spaces
     if (name === 'cardNumber') {
       value = value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
     }
-    // Auto-format expiry
     if (name === 'expiry') {
       value = value.replace(/\D/g, '').slice(0, 4);
       if (value.length >= 3) value = value.slice(0, 2) + '/' + value.slice(2);
     }
-    // CVV digits only
     if (name === 'cvv') {
       value = value.replace(/\D/g, '').slice(0, 3);
     }
@@ -49,17 +50,41 @@ const Checkout = ({onBack, onOrderSuccess }) => {
     setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
+
     setIsPlacing(true);
-    // Simulate order placement delay
-    setTimeout(() => {
+
+    try {
+      // Build order payload — no card details sent to backend
+      const orderData = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        address: form.address,
+        city: form.city,
+        zip: form.zip,
+        items: cartItems.map(item => ({
+          productId: item.id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+          thumbnail: item.thumbnail
+        })),
+        totalAmount: total
+      }
+
+      await placeOrder(orderData);
+      dispatch(clearCart());
       onOrderSuccess();
-    }, 1500);
+    } catch (error) {
+      console.error('Order failed:', error);
+      setIsPlacing(false);
+    }
   };
 
   return (

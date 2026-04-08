@@ -1,27 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { setCategory } from '../../store/slices/categorySlice';
-import { setSearchQuery } from '../../store/slices/searchSlice';
 import './NavBar.css';
 import { FaShoppingCart, FaChevronDown } from "react-icons/fa";
+import { useDispatch, useSelector } from 'react-redux';
+import { setSearchQuery } from '../../store/slices/searchSlice';
+import { setCategory } from '../../store/slices/categorySlice';
+import { fetchCategories, searchProducts } from '../../services/api';
 
-const Navbar = ({ onHome, onCartClick }) => {
+const Navbar = ({ onCartClick }) => {
   const dispatch = useDispatch();
-  const selectedCategory = useSelector(state => state.category.selected);
   const cartItems = useSelector(state => state.cart.items);
-  const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
+  const selectedCategory = useSelector(state => state.category.selected);
+  const searchQuery = useSelector(state => state.search.query);
 
   const [categories, setCategories] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [localSearch, setLocalSearch] = useState('');
   const dropdownRef = useRef(null);
 
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Fetch categories from our own backend
   useEffect(() => {
-    fetch('https://dummyjson.com/products/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data));
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories()
+        setCategories(data)
+      } catch (error) {
+        console.error('Failed to fetch categories:', error)
+      }
+    }
+    loadCategories()
   }, []);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -32,19 +43,23 @@ const Navbar = ({ onHome, onCartClick }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleAllProducts = () => {
-    onHome();
-    setInputValue('');
+  const handleCategoryClick = (category) => {
+    dispatch(setCategory(category));
+    dispatch(setSearchQuery(''));
+    setLocalSearch('');
     setDropdownOpen(false);
   };
 
-  const handleCategoryClick = (category) => {
-    dispatch(setCategory(category.slug));
+  const handleAllProducts = () => {
+    dispatch(setCategory(null));
+    dispatch(setSearchQuery(''));
+    setLocalSearch('');
     setDropdownOpen(false);
   };
 
   const handleSearch = () => {
-    dispatch(setSearchQuery(inputValue));
+    dispatch(setSearchQuery(localSearch));
+    dispatch(setCategory(null));
   };
 
   const handleKeyDown = (e) => {
@@ -53,7 +68,9 @@ const Navbar = ({ onHome, onCartClick }) => {
 
   return (
     <nav className="navbar">
-      <div className="nav-logo">BLUECART</div>
+      <div className="nav-logo" onClick={handleAllProducts} style={{ cursor: 'pointer' }}>
+        BLUECART
+      </div>
 
       <div className="nav-links">
         <span onClick={handleAllProducts}>Home</span>
@@ -74,11 +91,11 @@ const Navbar = ({ onHome, onCartClick }) => {
               </div>
               {categories.map((category) => (
                 <div
-                  key={category.slug}
-                  className={`dropdown-item ${selectedCategory === category.slug ? 'active' : ''}`}
+                  key={category}
+                  className={`dropdown-item ${selectedCategory === category ? 'active' : ''}`}
                   onClick={() => handleCategoryClick(category)}
                 >
-                  {category.name}
+                  {category}
                 </div>
               ))}
             </div>
@@ -90,8 +107,8 @@ const Navbar = ({ onHome, onCartClick }) => {
         <input
           type="text"
           placeholder="Search products..."
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
           onKeyDown={handleKeyDown}
         />
         <button onClick={handleSearch}>Search</button>
@@ -99,8 +116,7 @@ const Navbar = ({ onHome, onCartClick }) => {
 
       <div className="nav-cart">
         <button className="cart-button" onClick={onCartClick}>
-          <FaShoppingCart /> Cart
-          {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+          <FaShoppingCart /> Cart {cartCount > 0 && `(${cartCount})`}
         </button>
       </div>
     </nav>
